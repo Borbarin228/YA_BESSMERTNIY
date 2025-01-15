@@ -12,12 +12,11 @@ private:
 	int rowSize;
 	int columnSize;
 public:
-	SparseMatrix();
-	~SparseMatrix();
+	SparseMatrix():row(*new std::vector<int>), column(*new std::vector<int>), value(*new std::vector<double>), rowSize(0), columnSize(0) {};
+	~SparseMatrix() { delete& row; delete& column; delete& value;};
 	
-	SparseMatrix transform(std::vector<std::vector<double>>);
-	//input это будет перегрузка оператора()
-	//вывод перегрузкой <<
+	void transform(std::vector<std::vector<double>>);
+		
 	void setRowSize(int);
 	void setColumnSize(int);
 
@@ -41,6 +40,10 @@ public:
 	int minRow();
 	int maxColumn();
 	int minColumn();
+	friend std::ostream& operator<<(std::ostream& stream, const SparseMatrix&);
+private:
+	void compressRow(int);
+	void compressColumn(int);
 };
 
 #endif
