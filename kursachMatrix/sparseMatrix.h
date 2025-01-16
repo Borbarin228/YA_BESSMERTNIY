@@ -42,11 +42,13 @@ public:
 	int minColumn();
 	friend std::ostream& operator<<(std::ostream& stream, const SparseMatrix&);
 	double getValue(int, int);
+	std::vector<double> getRow(int);
+	std::vector<double> getColumn(int);
 private:
 	void compressRow(int);
 	void compressColumn(int);
 	int findIndex(int, int);
-	
+	double multiplCells(std::vector<double>, std::vector<double>);
 };
 
 #endif
