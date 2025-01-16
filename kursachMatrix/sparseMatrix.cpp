@@ -3,9 +3,9 @@
 std::ostream& operator<<(std::ostream& stream, const SparseMatrix& matrix) {
 	std::cout << "row:\tcolumn:\tvalue:" << std::endl;
 	for (int i = 0;i < matrix.value.size();i++) {
-		std::cout << matrix.row[i]+1 << "\t" << matrix.column[i]+1 << "\t" << matrix.value[i] << std::endl;
+		std::cout << matrix.row[i] << "\t" << matrix.column[i] << "\t" << matrix.value[i] << std::endl;
 	}
-	std::cout << "\tsize: " << matrix.rowSize << "x" << matrix.columnSize<<std::endl;
+	std::cout << "     size: " << matrix.rowSize << "x" << matrix.columnSize<<std::endl;
 	return stream;
 }
 
@@ -75,23 +75,23 @@ int SparseMatrix::findIndex(int r, int c) {
 	return -1;
 }
 
-SparseMatrix SparseMatrix::plusM(SparseMatrix secOperand) {
+SparseMatrix* SparseMatrix::plusM(SparseMatrix* secOperand) {
 	SparseMatrix* sparseMatrix = new SparseMatrix();
-	if ((this->columnSize == secOperand.columnSize) && (this->rowSize == secOperand.rowSize)) {
+	if ((this->columnSize == secOperand->columnSize) && (this->rowSize == secOperand->rowSize)) {
 		
 		for (int i = 0;i < this->columnSize;i++) {
 			
 			for (int j = 0;j < this->columnSize;j++) {
 				int result = 0;
-				int leftOpIndex = this->findIndex(i, j), rightOpIndex = secOperand.findIndex(i, j);
+				int leftOpIndex = this->findIndex(i, j), rightOpIndex = secOperand->findIndex(i, j);
 				if (leftOpIndex > -1 && rightOpIndex> -1) {
-					result = this->value[leftOpIndex]+secOperand.value[rightOpIndex];
+					result = this->value[leftOpIndex]+secOperand->value[rightOpIndex];
 					sparseMatrix->row.push_back(i);
 					sparseMatrix->column.push_back(j);
 					sparseMatrix->value.push_back(result);
 				}
 				else if (leftOpIndex == -1 && rightOpIndex > -1) {
-					result = secOperand.value[rightOpIndex];
+					result = secOperand->value[rightOpIndex];
 					sparseMatrix->row.push_back(i);
 					sparseMatrix->column.push_back(j);
 					sparseMatrix->value.push_back(result);
@@ -105,49 +105,52 @@ SparseMatrix SparseMatrix::plusM(SparseMatrix secOperand) {
 			}
 		}
 
-		return *sparseMatrix;
+		return sparseMatrix;
 	}
 	else {
 		throw new std::exception("incorrect operation execution");
 	}
 }
 
-SparseMatrix SparseMatrix::multiplM(SparseMatrix secOperand) {
+SparseMatrix* SparseMatrix::multiplM(SparseMatrix* secOperand) {
 
 
 	std::vector<std::vector<double>> result;
-	if (this->columnSize != secOperand.rowSize) {
+
+	if (this->columnSize != secOperand->rowSize) {
 		throw new std::exception("incorrect row or column length for  operation");
 	}
 	for (int i = 0; i < this->rowSize;i++) {
-		for (int j = 0; j < secOperand.columnSize; j++) {
-			result[j].push_back(multiplCells(this->getRow(i), secOperand.getRow(j)));
+		std::vector<double> buff;
+		for (int j = 0; j < secOperand->columnSize; j++) {
+			buff.push_back(multiplCells(this->getRow(i), secOperand->getColumn(j)));
 		}
+		result.push_back(buff);
 	}
-	SparseMatrix tmp = SparseMatrix();
-	tmp.transform(result);
+	SparseMatrix* tmp = new SparseMatrix();
+	tmp->transform(result);
 	return tmp;
 
 }
 
-SparseMatrix SparseMatrix::minusM(SparseMatrix secOperand) {
+SparseMatrix* SparseMatrix::minusM(SparseMatrix* secOperand) {
 
 	SparseMatrix* sparseMatrix = new SparseMatrix();
-	if ((this->columnSize == secOperand.columnSize) && (this->rowSize == secOperand.rowSize)) {
+	if ((this->columnSize == secOperand->columnSize) && (this->rowSize == secOperand->rowSize)) {
 
 		for (int i = 0;i < this->columnSize;i++) {
 
 			for (int j = 0;j < this->columnSize;j++) {
 				int result = 0;
-				int leftOpIndex = this->findIndex(i, j), rightOpIndex = secOperand.findIndex(i, j);
-				if (leftOpIndex > -1 && rightOpIndex > -1) {
-					result = this->value[leftOpIndex] - secOperand.value[rightOpIndex];
+				int leftOpIndex = this->findIndex(i, j), rightOpIndex = secOperand->findIndex(i, j);
+				if (leftOpIndex > -1 && rightOpIndex > -1 && this->value[leftOpIndex] - secOperand->value[rightOpIndex] != 0) {
+					result = this->value[leftOpIndex] - secOperand->value[rightOpIndex];
 					sparseMatrix->row.push_back(i);
 					sparseMatrix->column.push_back(j);
 					sparseMatrix->value.push_back(result);
 				}
 				else if (leftOpIndex == -1 && rightOpIndex > -1) {
-					result = -secOperand.value[rightOpIndex];
+					result = -secOperand->value[rightOpIndex];
 					sparseMatrix->row.push_back(i);
 					sparseMatrix->column.push_back(j);
 					sparseMatrix->value.push_back(result);
@@ -160,8 +163,9 @@ SparseMatrix SparseMatrix::minusM(SparseMatrix secOperand) {
 				}
 			}
 		}
-
-		return *sparseMatrix;
+		sparseMatrix->setRowSize(this->rowSize);
+		sparseMatrix->setColumnSize(this->columnSize);
+		return sparseMatrix;
 	}
 	else {
 		throw new std::exception("incorrect operation execution");
@@ -169,52 +173,60 @@ SparseMatrix SparseMatrix::minusM(SparseMatrix secOperand) {
 
 }
 
-SparseMatrix SparseMatrix::plusV(double x) {
-	SparseMatrix sparseMatrix = SparseMatrix();
+SparseMatrix* SparseMatrix::plusV(double x) {
+	SparseMatrix* sparseMatrix = new SparseMatrix();
 	for (int i = 0;i < value.size();i++) {
-		  sparseMatrix.value.push_back(value[i] + x);
-		  sparseMatrix.row.push_back(row[i]);
-		  sparseMatrix.column.push_back(column[i]);
+		if (value[i] + x != 0) {
+			sparseMatrix->value.push_back(value[i] + x);
+			sparseMatrix->row.push_back(row[i]);
+			sparseMatrix->column.push_back(column[i]);
+		}
 	}
 	return  sparseMatrix;
 }
 
-SparseMatrix SparseMatrix::multiplV(double x) {
-	SparseMatrix sparseMatrix = SparseMatrix();
+SparseMatrix* SparseMatrix::multiplV(double x) {
+	SparseMatrix* sparseMatrix = new SparseMatrix();
 	for (int i = 0;i < value.size();i++) {
-		sparseMatrix.value.push_back(value[i] * x);
-		sparseMatrix.row.push_back(row[i]);
-		sparseMatrix.column.push_back(column[i]);
+		if (value[i] * x != 0) {
+			sparseMatrix->value.push_back(value[i] * x);
+			sparseMatrix->row.push_back(row[i]);
+			sparseMatrix->column.push_back(column[i]);
+		}
 	}
 	return  sparseMatrix;
 }
 
-SparseMatrix SparseMatrix::minusV(double x) {
-	SparseMatrix sparseMatrix = SparseMatrix();
+SparseMatrix* SparseMatrix::minusV(double x) {
+	SparseMatrix* sparseMatrix = new SparseMatrix();
 	for (int i = 0;i < value.size();i++) {
-		sparseMatrix.value.push_back(value[i] - x);
-		sparseMatrix.row.push_back(row[i]);
-		sparseMatrix.column.push_back(column[i]);
+		if (value[i] - x != 0) {
+			sparseMatrix->value.push_back(value[i] - x);
+			sparseMatrix->row.push_back(row[i]);
+			sparseMatrix->column.push_back(column[i]);
+		}
 	}
+	sparseMatrix->columnSize = this->columnSize;
+	sparseMatrix->rowSize = this->rowSize;
 	return  sparseMatrix;
 }
 
-SparseMatrix SparseMatrix::genIdentityMatrix(int size) {
-	SparseMatrix sparseMatrix = SparseMatrix();
+SparseMatrix* SparseMatrix::genIdentityMatrix(int size) {
+	SparseMatrix* sparseMatrix = new SparseMatrix();
 	for (int i = 0;i < size;i++) {
-		sparseMatrix.value.push_back(1);
-		sparseMatrix.row.push_back(i);
-		sparseMatrix.column.push_back(i);
+		sparseMatrix->value.push_back(1);
+		sparseMatrix->row.push_back(i);
+		sparseMatrix->column.push_back(i);
 	}
-	sparseMatrix.columnSize = size;
-	sparseMatrix.rowSize = size;
+	sparseMatrix->columnSize = size;
+	sparseMatrix->rowSize = size;
 	return sparseMatrix;
 }
 
-SparseMatrix SparseMatrix::genZeroMatrix(int size) {
-	SparseMatrix sparseMatrix = SparseMatrix();
-	sparseMatrix.columnSize = size;
-	sparseMatrix.rowSize = size;
+SparseMatrix* SparseMatrix::genZeroMatrix(int size) {
+	SparseMatrix* sparseMatrix = new SparseMatrix();
+	sparseMatrix->columnSize = size;
+	sparseMatrix->rowSize = size;
 	return sparseMatrix;
 }
 
@@ -227,6 +239,7 @@ void SparseMatrix::delRow(int rowNum) {
 			this->value.erase(this->value.begin() + i);
 			this->row.erase(this->row.begin() + i);
 			this->column.erase(this->column.begin() + i);
+			i = i-1;
 		}
 	}
 }
@@ -240,6 +253,7 @@ void SparseMatrix::delColumn(int colNum) {
 			this->value.erase(this->value.begin() + i);
 			this->row.erase(this->row.begin() + i);
 			this->column.erase(this->column.begin() + i);
+			i = i - 1;
 		}
 	}
 }
@@ -248,27 +262,13 @@ void SparseMatrix::newRow(std::vector<double> newRow, int indx = 0) {
 	if (indx >= rowSize || newRow.size() >= columnSize) {
 		throw new std::exception("out of range");
 	}
-	delRow(indx);
-	for (int i = 0;i < row.size();i++) {
-		for (int j = 0; j < newRow.size();j++) {
-			if (newRow[j] != 0) {
-				if (row[i] == indx) {
-					if (findIndex(indx, i) == -1) {
-						row.push_back(indx);
-						column.push_back(j);
-						value.push_back(newRow[i]);
-					}
-					else {
-						column[i] = j;
-						value[i] = newRow[j];
-					}
-				}
-				else {
-					break;
-				}
-			}
+	this->delRow(indx);
+	for (int i = 0;i < newRow.size();i++) {
+		if (newRow[i] != 0) {
+			this->row.push_back(indx);
+			this->column.push_back(i);
+			this->value.push_back(newRow[i]);
 		}
-					
 	}
 }
 
@@ -277,26 +277,12 @@ void SparseMatrix::newColumn(std::vector<double> newColumn, int indx = 0) {
 		throw new std::exception("out of range");
 	}
 	delColumn(indx);
-	for (int i = 0;i < column.size();i++) {
-		for (int j = 0; j < newColumn.size();j++) {
-			if (newColumn[j] != 0) {
-				if (column[i] == indx) {
-					if (findIndex(i, indx) == -1) {
-						row.push_back(j);
-						column.push_back(indx);
-						value.push_back(newColumn[i]);
-					}
-					else {
-						row[i] = j;
-						value[i] = newColumn[j];
-					}
-				}
-				else {
-					break;
-				}
-			}
+	for (int i = 0;i < newColumn.size();i++) {
+		if (newColumn[i] != 0) {
+			this->row.push_back(i);
+			this->column.push_back(indx);
+			this->value.push_back(newColumn[i]);
 		}
-
 	}
 }
 
@@ -311,8 +297,8 @@ void SparseMatrix::changeRow(int fstRow, int scndRow) {
 	std::vector<double> row1, row2;
 	row1 = getRow(fstRow);
 	row2 = getRow(scndRow);
-	newRow(row1, fstRow);
-	newRow(row2, scndRow);
+	newRow(row1, scndRow);
+	newRow(row2, fstRow);
 
 }
 
@@ -327,14 +313,14 @@ void SparseMatrix::changeColumn(int fstColumn, int scndColumn) {
 	std::vector<double> row1, row2;
 	row1 = getColumn(fstColumn);
 	row2 = getColumn(scndColumn);
-	newRow(row1, fstColumn);
-	newRow(row2, scndColumn);
+	newColumn(row1, scndColumn);
+	newColumn(row2, fstColumn);
 }
 
 
 int SparseMatrix::maxRow() {
 	int max = 0;
-	for (int i = 0; i < rowSize;i++) {
+	for (int i = 0; i < row.size();i++) {
 		if (row[i] > max)
 			max = row[i];
 	}
@@ -343,7 +329,7 @@ int SparseMatrix::maxRow() {
 
 int SparseMatrix::minRow() {
 	int min = row[0];
-	for (int i = 0; i < rowSize;i++) {
+	for (int i = 0; i < row.size();i++) {
 		if (row[i] < min)
 			min = row[i];
 	}
@@ -352,7 +338,7 @@ int SparseMatrix::minRow() {
 
 int SparseMatrix::maxColumn() {
 	int max = 0;
-	for (int i = 0; i < columnSize;i++) {
+	for (int i = 0; i < column.size();i++) {
 		if (column[i] > max)
 			max = column[i];
 	}
@@ -361,7 +347,7 @@ int SparseMatrix::maxColumn() {
 
 int SparseMatrix::minColumn() {
 	int min = column[0];
-	for (int i = 0; i < columnSize;i++) {
+	for (int i = 0; i < column.size();i++) {
 		if (column[i] < min)
 			min = column[i];
 	}

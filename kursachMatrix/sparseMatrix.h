@@ -12,7 +12,8 @@ private:
 	int rowSize;
 	int columnSize;
 public:
-	SparseMatrix():row(*new std::vector<int>), column(*new std::vector<int>), value(*new std::vector<double>), rowSize(0), columnSize(0) {};
+
+	SparseMatrix(int x = 0) : row(*new std::vector<int>), column(*new std::vector<int>), value(*new std::vector<double>), rowSize(x), columnSize(x) {};
 	~SparseMatrix() { delete& row; delete& column; delete& value;};
 	
 	void transform(std::vector<std::vector<double>>);
@@ -20,16 +21,16 @@ public:
 	void setRowSize(int);
 	void setColumnSize(int);
 
-	SparseMatrix plusM(SparseMatrix);
-	SparseMatrix multiplM(SparseMatrix);
-	SparseMatrix minusM(SparseMatrix);
+	SparseMatrix* plusM(SparseMatrix*);
+	SparseMatrix* multiplM(SparseMatrix*);
+	SparseMatrix* minusM(SparseMatrix*);
 
-	SparseMatrix plusV(double);
-	SparseMatrix multiplV(double);
-	SparseMatrix minusV(double);
+	SparseMatrix* plusV(double);
+	SparseMatrix* multiplV(double);
+	SparseMatrix* minusV(double);
 
-	SparseMatrix genIdentityMatrix(int);
-	SparseMatrix genZeroMatrix(int);
+	SparseMatrix* genIdentityMatrix(int);
+	SparseMatrix* genZeroMatrix(int);
 	void delRow(int);
 	void delColumn(int);
 	void newRow(std::vector<double>, int);
