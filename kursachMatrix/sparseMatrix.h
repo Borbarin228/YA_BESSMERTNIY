@@ -24,16 +24,16 @@ public:
 	SparseMatrix multiplM(SparseMatrix);
 	SparseMatrix minusM(SparseMatrix);
 
-	SparseMatrix plusV(SparseMatrix);
-	SparseMatrix multiplV(SparseMatrix);
-	SparseMatrix minusV(SparseMatrix);
+	SparseMatrix plusV(double);
+	SparseMatrix multiplV(double);
+	SparseMatrix minusV(double);
 
-	SparseMatrix genIdentityMatrix(int, int);
-	SparseMatrix genZeroMatrix(int, int);
+	SparseMatrix genIdentityMatrix(int);
+	SparseMatrix genZeroMatrix(int);
 	void delRow(int);
 	void delColumn(int);
-	void newRow(std::vector<double>);
-	void newColumn(std::vector<double>);
+	void newRow(std::vector<double>, int);
+	void newColumn(std::vector<double>, int);
 	void changeRow(int, int);
 	void changeColumn(int, int);
 	int maxRow();
@@ -41,9 +41,12 @@ public:
 	int maxColumn();
 	int minColumn();
 	friend std::ostream& operator<<(std::ostream& stream, const SparseMatrix&);
+	double getValue(int, int);
 private:
 	void compressRow(int);
 	void compressColumn(int);
+	int findIndex(int, int);
+	
 };
 
 #endif
