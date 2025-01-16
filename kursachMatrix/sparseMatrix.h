@@ -30,7 +30,6 @@ public:
 	SparseMatrix* minusV(double);
 
 	SparseMatrix* genIdentityMatrix(int);
-	SparseMatrix* genZeroMatrix(int);
 	void delRow(int);
 	void delColumn(int);
 	void newRow(std::vector<double>, int);

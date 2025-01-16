@@ -104,7 +104,8 @@ SparseMatrix* SparseMatrix::plusM(SparseMatrix* secOperand) {
 				}
 			}
 		}
-
+		sparseMatrix->columnSize = columnSize;
+		sparseMatrix->rowSize = rowSize;
 		return sparseMatrix;
 	}
 	else {
@@ -129,6 +130,8 @@ SparseMatrix* SparseMatrix::multiplM(SparseMatrix* secOperand) {
 	}
 	SparseMatrix* tmp = new SparseMatrix();
 	tmp->transform(result);
+	tmp->columnSize = this->columnSize;
+	tmp->rowSize = secOperand->rowSize;
 	return tmp;
 
 }
@@ -182,6 +185,8 @@ SparseMatrix* SparseMatrix::plusV(double x) {
 			sparseMatrix->column.push_back(column[i]);
 		}
 	}
+	sparseMatrix->columnSize = columnSize;
+	sparseMatrix->rowSize = rowSize;
 	return  sparseMatrix;
 }
 
@@ -194,6 +199,8 @@ SparseMatrix* SparseMatrix::multiplV(double x) {
 			sparseMatrix->column.push_back(column[i]);
 		}
 	}
+	sparseMatrix->columnSize = columnSize;
+	sparseMatrix->rowSize = rowSize;
 	return  sparseMatrix;
 }
 
@@ -218,13 +225,6 @@ SparseMatrix* SparseMatrix::genIdentityMatrix(int size) {
 		sparseMatrix->row.push_back(i);
 		sparseMatrix->column.push_back(i);
 	}
-	sparseMatrix->columnSize = size;
-	sparseMatrix->rowSize = size;
-	return sparseMatrix;
-}
-
-SparseMatrix* SparseMatrix::genZeroMatrix(int size) {
-	SparseMatrix* sparseMatrix = new SparseMatrix();
 	sparseMatrix->columnSize = size;
 	sparseMatrix->rowSize = size;
 	return sparseMatrix;

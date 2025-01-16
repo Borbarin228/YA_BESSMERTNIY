@@ -59,6 +59,6 @@ int main(){
 	sparseMatrix1->changeColumn(0, 1);
 	std::cout <<"\n\nchangeColumn 0 & 1\n" << *sparseMatrix1;
 	sparseMatrix1->changeRow(3, 2);
-	std::cout << "\n\nchangeColumn 3 & 2\n" << *sparseMatrix1;
+	std::cout << "\n\nchangeRow 3 & 2\n" << *sparseMatrix1;
 	return 0;
 }
